@@ -1,0 +1,146 @@
+Resources:
+  agentcoredeepagentdevcoreagentcoredeepagentdevcoreagtcoreroleA2373015:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: bedrock-agentcore.amazonaws.com
+        Version: "2012-10-17"
+      Description: IAM role for Bedrock AgentCore Runtime
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ecr:BatchGetImage
+                  - ecr:GetDownloadUrlForLayer
+                Effect: Allow
+                Resource:
+                  Fn::Join:
+                    - ""
+                    - - "arn:aws:ecr:us-east-1:"
+                      - Ref: AWS::AccountId
+                      - :repository/*
+                Sid: ECRImageAccess
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:DescribeLogStreams
+                Effect: Allow
+                Resource:
+                  Fn::Join:
+                    - ""
+                    - - "arn:aws:logs:us-east-1:"
+                      - Ref: AWS::AccountId
+                      - :log-group:/aws/bedrock-agentcore/runtimes/*
+              - Action: logs:DescribeLogGroups
+                Effect: Allow
+                Resource:
+                  Fn::Join:
+                    - ""
+                    - - "arn:aws:logs:us-east-1:"
+                      - Ref: AWS::AccountId
+                      - :log-group:*
+              - Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource:
+                  Fn::Join:
+                    - ""
+                    - - "arn:aws:logs:us-east-1:"
+                      - Ref: AWS::AccountId
+                      - :log-group:/aws/bedrock-agentcore/runtimes/*:log-stream:*
+              - Action: ecr:GetAuthorizationToken
+                Effect: Allow
+                Resource: "*"
+                Sid: ECRTokenAccess
+              - Action:
+                  - xray:GetSamplingRules
+                  - xray:GetSamplingTargets
+                  - xray:PutTelemetryRecords
+                  - xray:PutTraceSegments
+                Effect: Allow
+                Resource: "*"
+              - Action: cloudwatch:PutMetricData
+                Condition:
+                  StringEquals:
+                    cloudwatch:namespace: bedrock-agentcore
+                Effect: Allow
+                Resource: "*"
+              - Action:
+                  - bedrock-agentcore:GetWorkloadAccessToken
+                  - bedrock-agentcore:GetWorkloadAccessTokenForJWT
+                  - bedrock-agentcore:GetWorkloadAccessTokenForUserId
+                Effect: Allow
+                Resource:
+                  - Fn::Join:
+                      - ""
+                      - - "arn:aws:bedrock-agentcore:us-east-1:"
+                        - Ref: AWS::AccountId
+                        - :workload-identity-directory/default
+                  - Fn::Join:
+                      - ""
+                      - - "arn:aws:bedrock-agentcore:us-east-1:"
+                        - Ref: AWS::AccountId
+                        - :workload-identity-directory/default/workload-identity/agentName-*
+                Sid: GetAgentAccessToken
+              - Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Effect: Allow
+                Resource:
+                  - arn:aws:bedrock:*::foundation-model/*
+                  - Fn::Join:
+                      - ""
+                      - - "arn:aws:bedrock:us-east-1:"
+                        - Ref: AWS::AccountId
+                        - :*
+                Sid: BedrockModelInvocation
+            Version: "2012-10-17"
+          PolicyName: RuntimeAccessPolicy
+    Metadata:
+      aws:cdk:path: agent-core-deep-agent-dev/agent-core-deep-agent-dev-core/agent-core-deep-agent-dev-core-agtcore-role/Resource
+  agentcoredeepagentdevcoreagentcoredeepagentdevcoreagentruntimeC5C9F051:
+    Type: AWS::BedrockAgentCore::Runtime
+    Properties:
+      AgentRuntimeArtifact:
+        ContainerConfiguration:
+          ContainerUri:
+            Fn::Sub: ${AWS::AccountId}.dkr.ecr.us-east-1.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-us-east-1:6396ce6717ea7df53cae0b2d15096e88bb4cbff4204cb84fc85473e9ffef51b1
+      AgentRuntimeName: agent-core-deep-agent-dev-core-agent-runtime
+      EnvironmentVariables:
+        AWS_REGION: us-east-1
+      NetworkConfiguration:
+        NetworkMode: PUBLIC
+      ProtocolConfiguration: HTTP
+      RoleArn:
+        Fn::GetAtt:
+          - agentcoredeepagentdevcoreagentcoredeepagentdevcoreagtcoreroleA2373015
+          - Arn
+    Metadata:
+      aws:cdk:path: agent-core-deep-agent-dev/agent-core-deep-agent-dev-core/agent-core-deep-agent-dev-core-agent-runtime
+  agentcoredeepagentdevcoreagentcoredeepagentdevcoreagentruntimeendpoint66DC37BE:
+    Type: AWS::BedrockAgentCore::RuntimeEndpoint
+    Properties:
+      AgentRuntimeId:
+        Fn::GetAtt:
+          - agentcoredeepagentdevcoreagentcoredeepagentdevcoreagentruntimeC5C9F051
+          - AgentRuntimeId
+      AgentRuntimeVersion: v1.0.0
+      Name: endpoint-dev
+    Metadata:
+      aws:cdk:path: agent-core-deep-agent-dev/agent-core-deep-agent-dev-core/agent-core-deep-agent-dev-core-agent-runtime-endpoint
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAA/y2MzQ6CMBCEn4V7WRV8Af8O3gw8AFnKWlegS9oaQpq+u0E8zWRmvimgOJawz3D2ue76fOAWYh1Q9wpn30TSrkHvKXi4iu7J3Uc0dFoTRdpBRZN4DuKWM3pSjCPESgZSl6ddNamWOie6R0M2aHEEca0+NvC4rTZ7s90kbENK6vdeBzRsTVKPJbzE7ko4lFBkb8+cuw2BP/oF0WYtisQAAAA=
+    Metadata:
+      aws:cdk:path: agent-core-deep-agent-dev/CDKMetadata/Default
+Parameters:
+  BootstrapVersion:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /cdk-bootstrap/hnb659fds/version
+    Description: Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]
+
