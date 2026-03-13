@@ -19,18 +19,18 @@ class DeepAgentCore(Construct):
         region = cdk.Stack.of(self).region
         account_id = cdk.Stack.of(self).account
 
-        ecr_repo_id = f"{construct_id}-ecr"
-        docker_asset_id = f"{construct_id}-docker-asset"
-        agent_runtime_id = f"{construct_id}-agent-runtime"
-        agent_runtime_endpoint_id = f"{construct_id}-agent-runtime-endpoint"
-        iam_role_id = f"{construct_id}-agtcore-role"
+        # ecr_repo_id = f"{construct_id}-ecr"
+        docker_asset_id = f"{construct_id}DockerAsset"
+        agent_runtime_id = f"{construct_id}AgentRuntime"
+        agent_runtime_endpoint_id = f"{construct_id}AgentRuntimeEndpoint"
+        iam_role_id = f"{construct_id}AgtcoreRole"
 
         asset = ecr_assets.DockerImageAsset(
             self, docker_asset_id, directory=os.path.join(os.getcwd())
         )
 
         # repository = ecr.Repository(self, ecr_repo_id, repository_name=ecr_repo_id)
-        agentcore_runtime_version = kwargs.get("agentcore_runtime_version", "v1.0.0")
+        agentcore_runtime_version = kwargs.get("agentcore_runtime_version", "1")
         # The runtime by default create ECR permission only for the repository available in the account the stack is being deployed
         agent_runtime_artifact = agentcore.CfnRuntime.AgentRuntimeArtifactProperty(
             container_configuration=agentcore.CfnRuntime.ContainerConfigurationProperty(
@@ -140,7 +140,7 @@ class DeepAgentCore(Construct):
             agent_runtime_endpoint_id,
             agent_runtime_id=agent_core_runtime.attr_agent_runtime_id,
             agent_runtime_version=agentcore_runtime_version,
-            name="endpoint-dev",
+            name="dev",
         )
 
         # CHECK this

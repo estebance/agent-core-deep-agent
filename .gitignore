@@ -20,3 +20,6 @@ cdk.out/
 # IDE
 .idea/
 .vscode/
+
+# AgentCore
+.bedrock_agentcore.yaml

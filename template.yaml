@@ -1,5 +1,5 @@
 Resources:
-  agentcoredeepagentdevcoreagentcoredeepagentdevcoreagtcoreroleA2373015:
+  DeepAgentCoreDeepAgentCoreAgtcoreRoleE5754266:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -101,15 +101,15 @@ Resources:
             Version: "2012-10-17"
           PolicyName: RuntimeAccessPolicy
     Metadata:
-      aws:cdk:path: agent-core-deep-agent-dev/agent-core-deep-agent-dev-core/agent-core-deep-agent-dev-core-agtcore-role/Resource
-  agentcoredeepagentdevcoreagentcoredeepagentdevcoreagentruntimeC5C9F051:
+      aws:cdk:path: agent-core-deep-agent-dev/DeepAgentCore/DeepAgentCoreAgtcoreRole/Resource
+  DeepAgentCoreDeepAgentCoreAgentRuntime55FE1A7E:
     Type: AWS::BedrockAgentCore::Runtime
     Properties:
       AgentRuntimeArtifact:
         ContainerConfiguration:
           ContainerUri:
-            Fn::Sub: ${AWS::AccountId}.dkr.ecr.us-east-1.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-us-east-1:6396ce6717ea7df53cae0b2d15096e88bb4cbff4204cb84fc85473e9ffef51b1
-      AgentRuntimeName: agent-core-deep-agent-dev-core-agent-runtime
+            Fn::Sub: ${AWS::AccountId}.dkr.ecr.us-east-1.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-us-east-1:3032daf30f9ecbe19f25a86e6db13fe71acefe70032408151f5912b1d46fdfc3
+      AgentRuntimeName: DeepAgentCoreAgentRuntime
       EnvironmentVariables:
         AWS_REGION: us-east-1
       NetworkConfiguration:
@@ -117,21 +117,21 @@ Resources:
       ProtocolConfiguration: HTTP
       RoleArn:
         Fn::GetAtt:
-          - agentcoredeepagentdevcoreagentcoredeepagentdevcoreagtcoreroleA2373015
+          - DeepAgentCoreDeepAgentCoreAgtcoreRoleE5754266
           - Arn
     Metadata:
-      aws:cdk:path: agent-core-deep-agent-dev/agent-core-deep-agent-dev-core/agent-core-deep-agent-dev-core-agent-runtime
-  agentcoredeepagentdevcoreagentcoredeepagentdevcoreagentruntimeendpoint66DC37BE:
+      aws:cdk:path: agent-core-deep-agent-dev/DeepAgentCore/DeepAgentCoreAgentRuntime
+  DeepAgentCoreDeepAgentCoreAgentRuntimeEndpointEABE2989:
     Type: AWS::BedrockAgentCore::RuntimeEndpoint
     Properties:
       AgentRuntimeId:
         Fn::GetAtt:
-          - agentcoredeepagentdevcoreagentcoredeepagentdevcoreagentruntimeC5C9F051
+          - DeepAgentCoreDeepAgentCoreAgentRuntime55FE1A7E
           - AgentRuntimeId
-      AgentRuntimeVersion: v1.0.0
-      Name: endpoint-dev
+      AgentRuntimeVersion: "1"
+      Name: dev
     Metadata:
-      aws:cdk:path: agent-core-deep-agent-dev/agent-core-deep-agent-dev-core/agent-core-deep-agent-dev-core-agent-runtime-endpoint
+      aws:cdk:path: agent-core-deep-agent-dev/DeepAgentCore/DeepAgentCoreAgentRuntimeEndpoint
   CDKMetadata:
     Type: AWS::CDK::Metadata
     Properties:

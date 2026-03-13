@@ -6,7 +6,8 @@ ENV UV_SYSTEM_PYTHON=1 \
     UV_COMPILE_BYTECODE=1 \
     UV_NO_PROGRESS=1 \
     PYTHONUNBUFFERED=1 \
-    DOCKER_CONTAINER=1
+    DOCKER_CONTAINER=1 \
+    PYTHONPATH=/app/src
 
 COPY pyproject.toml pyproject.toml
 # Install from requirements file
