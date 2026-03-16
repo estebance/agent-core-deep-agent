@@ -5,9 +5,6 @@ import aws_cdk.aws_ecr_assets as ecr_assets
 from aws_cdk import (
     aws_bedrockagentcore as agentcore,
 )
-from aws_cdk import (
-    aws_ecr as ecr,
-)
 from aws_cdk import aws_iam as iam
 from constructs import Construct
 
@@ -25,7 +22,7 @@ class DeepAgentCore(Construct):
         agent_runtime_endpoint_id = f"{construct_id}AgentRuntimeEndpoint"
         iam_role_id = f"{construct_id}AgtcoreRole"
 
-        asset = ecr_assets.DockerImageAsset(
+        docker_asset = ecr_assets.DockerImageAsset(
             self, docker_asset_id, directory=os.path.join(os.getcwd())
         )
 
@@ -34,9 +31,10 @@ class DeepAgentCore(Construct):
         # The runtime by default create ECR permission only for the repository available in the account the stack is being deployed
         agent_runtime_artifact = agentcore.CfnRuntime.AgentRuntimeArtifactProperty(
             container_configuration=agentcore.CfnRuntime.ContainerConfigurationProperty(
-                container_uri=asset.image_uri
+                container_uri=docker_asset.image_uri
             )
         )
+        # create the agent core memory
 
         # agent core runtime policy
         runtime_policy = iam.PolicyDocument(
@@ -143,11 +141,35 @@ class DeepAgentCore(Construct):
             name="dev",
         )
 
-        # CHECK this
-        # bedrockagentcore.CfnRuntimeEndpoint(
-        #     self,
-        #     f"{props.app_name}-AgentCoreRuntimeDevEndpoint",
-        #     agent_runtime_id=self.agent_core_runtime.attr_agent_runtime_id,
-        #     agent_runtime_version="1",
-        #     name="DEV",
-        # )
+        # stack outpute
+        cdk.CfnOutput(
+            self,
+            f"{docker_asset_id}ImageUri",
+            value=docker_asset.image_uri,
+            description="Docker asset image URI",
+            export_name=f"{docker_asset_id}ImageUri",  # Optional: name for cross-stack reference
+        )
+
+        cdk.CfnOutput(
+            self,
+            f"{agent_runtime_id}Id",
+            value=agent_core_runtime.attr_agent_runtime_id,
+            description="Agent runtime ID",
+            export_name=f"{agent_runtime_id}Id",  # Optional: name for cross-stack reference
+        )
+
+        cdk.CfnOutput(
+            self,
+            f"{agent_runtime_id}Arn",
+            value=agent_core_runtime.attr_agent_runtime_arn,
+            description="Agent runtime ARN",
+            export_name=f"{agent_runtime_id}Arn",  # Optional: name for cross-stack reference
+        )
+
+        cdk.CfnOutput(
+            self,
+            f"{iam_role_id}Arn",
+            value=runtime_role.role_arn,
+            description="Agent Runtime role ARN",
+            export_name=f"{iam_role_id}Arn",  # Optional: name for cross-stack reference
+        )

@@ -1,4 +1,102 @@
 Resources:
+  DeepAgentCognitoDeepAgentCognitoUserPoolC980B682:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+      AutoVerifiedAttributes:
+        - email
+      EmailVerificationMessage: The verification code to your new account is {####}
+      EmailVerificationSubject: Verify your new account
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          RequireUppercase: true
+      Schema:
+        - Mutable: true
+          Name: email
+          Required: true
+      SmsVerificationMessage: The verification code to your new account is {####}
+      UserPoolName: DeepAgentCognitoUserPool
+      UsernameAttributes:
+        - email
+      VerificationMessageTemplate:
+        DefaultEmailOption: CONFIRM_WITH_CODE
+        EmailMessage: The verification code to your new account is {####}
+        EmailSubject: Verify your new account
+        SmsMessage: The verification code to your new account is {####}
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: agent-core-deep-agent-dev/DeepAgentCognito/DeepAgentCognitoUserPool/Resource
+  DeepAgentCognitoDeepAgentCognitoUserPoolDeepAgentCognitoUserPoolDomainDB0EA967:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain:
+        Fn::Join:
+          - "-"
+          - - deep-agent
+            - Ref: AWS::AccountId
+            - Ref: AWS::Region
+      UserPoolId:
+        Ref: DeepAgentCognitoDeepAgentCognitoUserPoolC980B682
+    Metadata:
+      aws:cdk:path: agent-core-deep-agent-dev/DeepAgentCognito/DeepAgentCognitoUserPool/DeepAgentCognitoUserPoolDomain/Resource
+  DeepAgentCognitoDeepAgentCognitoUserPoolDeepAgentCognitoResourceServer02BE1B7E:
+    Type: AWS::Cognito::UserPoolResourceServer
+    Properties:
+      Identifier: deepagent
+      Name: deepagent
+      Scopes:
+        - ScopeDescription: Invoke the deep agent
+          ScopeName: invoke
+      UserPoolId:
+        Ref: DeepAgentCognitoDeepAgentCognitoUserPoolC980B682
+    Metadata:
+      aws:cdk:path: agent-core-deep-agent-dev/DeepAgentCognito/DeepAgentCognitoUserPool/DeepAgentCognitoResourceServer/Resource
+  DeepAgentCognitoDeepAgentCognitoUserPoolDeepAgentCognitoUserPoolClient3365974C:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      AccessTokenValidity: 60
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthScopes:
+        - openid
+        - email
+        - profile
+        - Fn::Join:
+            - ""
+            - - Ref: DeepAgentCognitoDeepAgentCognitoUserPoolDeepAgentCognitoResourceServer02BE1B7E
+              - /invoke
+      CallbackURLs:
+        - https://example.com
+      ClientName: DeepAgentCognitoUserPoolClient
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      GenerateSecret: false
+      IdTokenValidity: 60
+      PreventUserExistenceErrors: ENABLED
+      RefreshTokenValidity: 43200
+      SupportedIdentityProviders:
+        - COGNITO
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: minutes
+      UserPoolId:
+        Ref: DeepAgentCognitoDeepAgentCognitoUserPoolC980B682
+    Metadata:
+      aws:cdk:path: agent-core-deep-agent-dev/DeepAgentCognito/DeepAgentCognitoUserPool/DeepAgentCognitoUserPoolClient/Resource
   DeepAgentCoreDeepAgentCoreAgtcoreRoleE5754266:
     Type: AWS::IAM::Role
     Properties:
@@ -108,7 +206,7 @@ Resources:
       AgentRuntimeArtifact:
         ContainerConfiguration:
           ContainerUri:
-            Fn::Sub: ${AWS::AccountId}.dkr.ecr.us-east-1.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-us-east-1:3032daf30f9ecbe19f25a86e6db13fe71acefe70032408151f5912b1d46fdfc3
+            Fn::Sub: ${AWS::AccountId}.dkr.ecr.us-east-1.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-us-east-1:42154b144ab1b62b505b1c9dec7daf8103c4891017178c9a140583423e24cc77
       AgentRuntimeName: DeepAgentCoreAgentRuntime
       EnvironmentVariables:
         AWS_REGION: us-east-1
@@ -135,12 +233,84 @@ Resources:
   CDKMetadata:
     Type: AWS::CDK::Metadata
     Properties:
-      Analytics: v2:deflate64:H4sIAAAAAAAA/y2MzQ6CMBCEn4V7WRV8Af8O3gw8AFnKWlegS9oaQpq+u0E8zWRmvimgOJawz3D2ue76fOAWYh1Q9wpn30TSrkHvKXi4iu7J3Uc0dFoTRdpBRZN4DuKWM3pSjCPESgZSl6ddNamWOie6R0M2aHEEca0+NvC4rTZ7s90kbENK6vdeBzRsTVKPJbzE7ko4lFBkb8+cuw2BP/oF0WYtisQAAAA=
+      Analytics: v2:deflate64:H4sIAAAAAAAA/12NwU7DQAxEv6X3jYGEH4CWAyeqRJyr7cYEk8SOdh2qarX/jpY0KOLk8ZvxuITysYL7nb2EwrV9MdAZYqPW9cZewik66ZhUIL4H9EeRwew/+E+v4iCjJd5aN7KuNQaZvcMG/Tf6bfCfs+L9QMi6DS4kGXT+ZENADXAQ16N/HW2HT5lkD2qcJJCKvz7bgIbsCLGWAXNXnsmcsfXietshqxOPELM1s9K4pBb5wu0kxJpShm+zTrOa3z+N2o64S+Z41U/huwoeKih3X4Go8Msx3Ep+AI2dGX1gAQAA
     Metadata:
       aws:cdk:path: agent-core-deep-agent-dev/CDKMetadata/Default
+Outputs:
+  DeepAgentCognitoDeepAgentCognitoUserPoolId21D35626:
+    Description: Cognito User Pool ID
+    Value:
+      Ref: DeepAgentCognitoDeepAgentCognitoUserPoolC980B682
+    Export:
+      Name: DeepAgentCognitoUserPoolId
+  DeepAgentCognitoDeepAgentCognitoUserPoolArn79B3333E:
+    Description: Cognito User Pool ARN
+    Value:
+      Fn::GetAtt:
+        - DeepAgentCognitoDeepAgentCognitoUserPoolC980B682
+        - Arn
+    Export:
+      Name: DeepAgentCognitoUserPoolArn
+  DeepAgentCognitoDeepAgentCognitoUserPoolClientId28C193CB:
+    Description: Cognito User Pool Client ID
+    Value:
+      Ref: DeepAgentCognitoDeepAgentCognitoUserPoolDeepAgentCognitoUserPoolClient3365974C
+    Export:
+      Name: DeepAgentCognitoUserPoolClientId
+  DeepAgentCognitoDeepAgentCognitoUserPoolDomainNameE1A762FA:
+    Description: Cognito User Pool Domain name
+    Value:
+      Ref: DeepAgentCognitoDeepAgentCognitoUserPoolDeepAgentCognitoUserPoolDomainDB0EA967
+    Export:
+      Name: DeepAgentCognitoUserPoolDomainName
+  DeepAgentCognitoDeepAgentCognitoUserPoolDomainBaseUrl5602F766:
+    Description: Cognito User Pool Domain base URL
+    Value:
+      Fn::Join:
+        - ""
+        - - https://
+          - Ref: DeepAgentCognitoDeepAgentCognitoUserPoolDeepAgentCognitoUserPoolDomainDB0EA967
+          - .auth.us-east-1.amazoncognito.com
+    Export:
+      Name: DeepAgentCognitoUserPoolDomainBaseUrl
+  DeepAgentCognitoDeepAgentCognitoResourceServerIdentifier71137B9F:
+    Description: Cognito Resource Server identifier
+    Value:
+      Ref: DeepAgentCognitoDeepAgentCognitoUserPoolDeepAgentCognitoResourceServer02BE1B7E
+    Export:
+      Name: DeepAgentCognitoResourceServerIdentifier
+  DeepAgentCoreDeepAgentCoreDockerAssetImageUriC19AD2EA:
+    Description: Docker asset image URI
+    Value:
+      Fn::Sub: ${AWS::AccountId}.dkr.ecr.us-east-1.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-us-east-1:42154b144ab1b62b505b1c9dec7daf8103c4891017178c9a140583423e24cc77
+    Export:
+      Name: DeepAgentCoreDockerAssetImageUri
+  DeepAgentCoreDeepAgentCoreAgentRuntimeId91875D8E:
+    Description: Agent runtime ID
+    Value:
+      Fn::GetAtt:
+        - DeepAgentCoreDeepAgentCoreAgentRuntime55FE1A7E
+        - AgentRuntimeId
+    Export:
+      Name: DeepAgentCoreAgentRuntimeId
+  DeepAgentCoreDeepAgentCoreAgentRuntimeArnA3D7DB57:
+    Description: Agent runtime ARN
+    Value:
+      Fn::GetAtt:
+        - DeepAgentCoreDeepAgentCoreAgentRuntime55FE1A7E
+        - AgentRuntimeArn
+    Export:
+      Name: DeepAgentCoreAgentRuntimeArn
+  DeepAgentCoreDeepAgentCoreAgtcoreRoleArnC5209B78:
+    Description: Agent Runtime role ARN
+    Value:
+      Fn::GetAtt:
+        - DeepAgentCoreDeepAgentCoreAgtcoreRoleE5754266
+        - Arn
+    Export:
+      Name: DeepAgentCoreAgtcoreRoleArn
 Parameters:
   BootstrapVersion:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /cdk-bootstrap/hnb659fds/version
     Description: Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]
-
