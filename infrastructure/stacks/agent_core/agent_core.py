@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import os
+from typing import TYPE_CHECKING
 
 import aws_cdk as cdk
 import aws_cdk.aws_ecr_assets as ecr_assets
@@ -8,9 +11,19 @@ from aws_cdk import (
 from aws_cdk import aws_iam as iam
 from constructs import Construct
 
+if TYPE_CHECKING:
+    from infrastructure.stacks.cognito.cognito import DeepAgentCognito
+
 
 class DeepAgentCore(Construct):
-    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cognito: DeepAgentCognito | None = None,
+        **kwargs,
+    ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         region = cdk.Stack.of(self).region
@@ -120,6 +133,34 @@ class DeepAgentCore(Construct):
             inline_policies={"RuntimeAccessPolicy": runtime_policy},
         )
 
+        # Build authorizer configuration only when a Cognito construct is provided
+        authorizer_configuration = None
+        if cognito is not None:
+            # OIDC discovery URL for the Cognito User Pool
+            discovery_url = cdk.Fn.join(
+                "",
+                [
+                    "https://cognito-idp.",
+                    region,
+                    ".amazonaws.com/",
+                    cognito.user_pool.user_pool_id,
+                    "/.well-known/openid-configuration",
+                ],
+            )
+
+            authorizer_configuration = agentcore.CfnRuntime.AuthorizerConfigurationProperty(
+                custom_jwt_authorizer=agentcore.CfnRuntime.CustomJWTAuthorizerConfigurationProperty(
+                    discovery_url=discovery_url,
+                    allowed_audience=[
+                        cognito.user_pool_client.user_pool_client_id,
+                    ],
+                    allowed_clients=[
+                        cognito.user_pool_client.user_pool_client_id,
+                    ],
+                    allowed_scopes=["deepagent/invoke"],
+                ),
+            )
+
         agent_core_runtime = agentcore.CfnRuntime(
             self,
             agent_runtime_id,
@@ -129,6 +170,7 @@ class DeepAgentCore(Construct):
             network_configuration=agentcore.CfnRuntime.NetworkConfigurationProperty(
                 network_mode="PUBLIC"
             ),
+            authorizer_configuration=authorizer_configuration,
             role_arn=runtime_role.role_arn,
             environment_variables={"AWS_REGION": region},
         )
@@ -141,13 +183,13 @@ class DeepAgentCore(Construct):
             name="dev",
         )
 
-        # stack outpute
+        # stack outputs
         cdk.CfnOutput(
             self,
             f"{docker_asset_id}ImageUri",
             value=docker_asset.image_uri,
             description="Docker asset image URI",
-            export_name=f"{docker_asset_id}ImageUri",  # Optional: name for cross-stack reference
+            export_name=f"{docker_asset_id}ImageUri",
         )
 
         cdk.CfnOutput(
@@ -155,7 +197,7 @@ class DeepAgentCore(Construct):
             f"{agent_runtime_id}Id",
             value=agent_core_runtime.attr_agent_runtime_id,
             description="Agent runtime ID",
-            export_name=f"{agent_runtime_id}Id",  # Optional: name for cross-stack reference
+            export_name=f"{agent_runtime_id}Id",
         )
 
         cdk.CfnOutput(
@@ -163,7 +205,7 @@ class DeepAgentCore(Construct):
             f"{agent_runtime_id}Arn",
             value=agent_core_runtime.attr_agent_runtime_arn,
             description="Agent runtime ARN",
-            export_name=f"{agent_runtime_id}Arn",  # Optional: name for cross-stack reference
+            export_name=f"{agent_runtime_id}Arn",
         )
 
         cdk.CfnOutput(
@@ -171,5 +213,5 @@ class DeepAgentCore(Construct):
             f"{iam_role_id}Arn",
             value=runtime_role.role_arn,
             description="Agent Runtime role ARN",
-            export_name=f"{iam_role_id}Arn",  # Optional: name for cross-stack reference
+            export_name=f"{iam_role_id}Arn",
         )

@@ -9,6 +9,6 @@ class AgentStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs: object) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        DeepAgentCognito(self, f"DeepAgentCognito")
+        cognito = DeepAgentCognito(self, "DeepAgentCognito")
 
-        DeepAgentCore(self, f"DeepAgentCore")
+        DeepAgentCore(self, "DeepAgentCore", cognito=cognito)

@@ -206,8 +206,22 @@ Resources:
       AgentRuntimeArtifact:
         ContainerConfiguration:
           ContainerUri:
-            Fn::Sub: ${AWS::AccountId}.dkr.ecr.us-east-1.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-us-east-1:42154b144ab1b62b505b1c9dec7daf8103c4891017178c9a140583423e24cc77
+            Fn::Sub: ${AWS::AccountId}.dkr.ecr.us-east-1.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-us-east-1:c92eabcd17823b9f2ded972dd33e1a63e736bae241e44a41f5923ad473fa4598
       AgentRuntimeName: DeepAgentCoreAgentRuntime
+      AuthorizerConfiguration:
+        CustomJWTAuthorizer:
+          AllowedAudience:
+            - Ref: DeepAgentCognitoDeepAgentCognitoUserPoolDeepAgentCognitoUserPoolClient3365974C
+          AllowedClients:
+            - Ref: DeepAgentCognitoDeepAgentCognitoUserPoolDeepAgentCognitoUserPoolClient3365974C
+          AllowedScopes:
+            - deepagent/invoke
+          DiscoveryUrl:
+            Fn::Join:
+              - ""
+              - - https://cognito-idp.us-east-1.amazonaws.com/
+                - Ref: DeepAgentCognitoDeepAgentCognitoUserPoolC980B682
+                - /.well-known/openid-configuration
       EnvironmentVariables:
         AWS_REGION: us-east-1
       NetworkConfiguration:
@@ -282,7 +296,7 @@ Outputs:
   DeepAgentCoreDeepAgentCoreDockerAssetImageUriC19AD2EA:
     Description: Docker asset image URI
     Value:
-      Fn::Sub: ${AWS::AccountId}.dkr.ecr.us-east-1.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-us-east-1:42154b144ab1b62b505b1c9dec7daf8103c4891017178c9a140583423e24cc77
+      Fn::Sub: ${AWS::AccountId}.dkr.ecr.us-east-1.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-us-east-1:c92eabcd17823b9f2ded972dd33e1a63e736bae241e44a41f5923ad473fa4598
     Export:
       Name: DeepAgentCoreDockerAssetImageUri
   DeepAgentCoreDeepAgentCoreAgentRuntimeId91875D8E:
@@ -314,3 +328,4 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /cdk-bootstrap/hnb659fds/version
     Description: Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]
+
