@@ -26,3 +26,6 @@ cdk.out/
 
 # Notes
 NOTES.md
+
+# 
+*.DS_Store
